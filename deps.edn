@@ -1,0 +1,2 @@
+{:deps
+ {ring/ring-jetty-adapter {:mvn/version "1.8.1"}}}

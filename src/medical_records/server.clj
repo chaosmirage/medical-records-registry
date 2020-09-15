@@ -1,18 +1,14 @@
 (ns medical-records.server
-  (:gen-class)
-  (:require [ring.adapter.jetty :as jetty]))
+  (:require [ring.adapter.jetty :as jetty])
+  (:require [compojure.core :refer [defroutes POST GET]]))
 
-(defn handle-request [request] 
-  (println request)
-  {
-   :status 200, 
-   :headers {"Content-Type" "text/plain"}
-   :body "Hello World\n"})
+(defroutes routes
+  (GET "/" [] "Hello world")
+  (POST "/patients" [request] "created"))
 
 (jetty/run-jetty
- handle-request
- {
-  :host "127.0.0.1"
+ #'routes
+ {:host "127.0.0.1"
   :port 8081
   :join? false})
 

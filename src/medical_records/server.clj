@@ -1,4 +1,5 @@
-(ns server
+(ns medical-records.server
+  (:gen-class)
   (:require [ring.adapter.jetty :as jetty]))
 
 (defn handle-request [request] 
@@ -15,5 +16,5 @@
   :port 8081
   :join? false})
 
-(defn -main [] 
+(defn -main []
   (println "Server running at http://127.0.0.1:8081/"))

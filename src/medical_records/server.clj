@@ -1,10 +1,12 @@
 (ns medical-records.server
-  (:use [ring.util.response])
+  (:use 
+   [ring.util.response])
   (:require [compojure.handler :as handler]
             [compojure.core :refer [defroutes POST GET PUT DELETE context]]
             [compojure.route :as route]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
-            [clojure.java.jdbc :as sql]))
+            [clojure.java.jdbc :as sql]
+            [pg-types.all]))
 
 (def spec {:dbtype "postgres"
            :dbname "medical-records"})
@@ -25,16 +27,16 @@
                 (get-in patient ["address"])]))
 
 (defn update-patient [id patient]
-  (println patient)
   (let [{name :name
          address :address
-         gender :gender} (assoc patient "id" id)]
-    (println name)
+         gender :gender
+         policy_number :policy_number} (assoc patient "id" id)]
     (sql/update! spec :patients
                  {:id (Integer/parseInt id)
                   :name name
                   :address address
-                  :gender gender}
+                  :gender (seq gender)
+                  :policy_number (seq policy_number)}
                  ["id = cast(? as integer)" id]))
   (get-patient id))
 

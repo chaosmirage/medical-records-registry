@@ -1,14 +1,40 @@
 (ns medical-records.server
   (:use 
-   [ring.util.response]
-   [java-time])
+   [ring.util.response])
   (:refer-clojure :exclude [range iterate format max min])
   (:require [compojure.handler :as handler]
             [compojure.core :refer [defroutes POST GET PUT DELETE context]]
             [compojure.route :as route]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [clojure.java.jdbc :as sql]
-            [pg-types.all]))
+            [clj-time.jdbc]
+            [clj-time.format :as f]
+            [cheshire.core :refer :all]
+            [clojure.string :as str]))
+
+;; https://stackoverflow.com/a/46859915
+(extend-protocol cheshire.generate/JSONable
+  org.joda.time.DateTime
+  (to-json [dt gen]
+    (cheshire.generate/write-string gen (str dt))))
+
+;; https://stackoverflow.com/a/25786990
+(extend-protocol clojure.java.jdbc/ISQLParameter
+  clojure.lang.IPersistentVector
+  (set-parameter [v ^java.sql.PreparedStatement stmt ^long i]
+    (let [conn (.getConnection stmt)
+          meta (.getParameterMetaData stmt)
+          type-name (.getParameterTypeName meta i)]
+      (if-let [elem-type (when (= (first type-name) \_) (apply str (rest type-name)))]
+        (.setObject stmt i (.createArrayOf conn elem-type (to-array v)))
+        (.setObject stmt i v)))))
+
+(extend-protocol clojure.java.jdbc/IResultSetReadColumn
+  java.sql.Array
+  (result-set-read-column [val _ _]
+    (into [] (.getArray val))))
+
+(def custom-formatter (f/formatter "dd.MM.yyyy"))
 
 (def spec {:dbtype "postgres"
            :dbname "medical-records"})
@@ -38,9 +64,9 @@
                  {:id (Integer/parseInt id)
                   :name name
                   :address address
-                  :gender (seq gender)
-                  :policy_number (seq policy_number)
-                  :birthday (java-time/local-date "dd.MM.yyyy" birthday)}
+                  :gender (str/split gender #"")
+                  :policy_number (str/split policy_number #"")
+                  :birthday (f/parse custom-formatter birthday)}
                  ["id = cast(? as integer)" id]))
   (get-patient id))
 

@@ -7,10 +7,11 @@
                  [ring/ring-defaults "0.3.2"]
                  [ring/ring-core "1.8.1"]
                  [ring/ring-jetty-adapter "1.8.1"]
-                 [org.clojure/java.jdbc "0.7.11"]
+                 [seancorfield/next.jdbc "1.1.588"]
                  [org.postgresql/postgresql "42.2.16.jre7"]
                  [ring/ring-json "0.5.0"]
-                 [pg-types "2.4.0"]]
+                 [pg-types "2.4.0"]
+                 [clojure.java-time "0.3.2"]]
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler medical-records.server/app :nrepl {:start? true}}
   :main ^:skip-aot medical-records.server

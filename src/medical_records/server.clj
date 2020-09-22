@@ -1,6 +1,8 @@
 (ns medical-records.server
   (:use 
-   [ring.util.response])
+   [ring.util.response]
+   [java-time])
+  (:refer-clojure :exclude [range iterate format max min])
   (:require [compojure.handler :as handler]
             [compojure.core :refer [defroutes POST GET PUT DELETE context]]
             [compojure.route :as route]
@@ -30,13 +32,15 @@
   (let [{name :name
          address :address
          gender :gender
-         policy_number :policy_number} (assoc patient "id" id)]
+         policy_number :policy_number
+         birthday :birthday} (assoc patient "id" id)]
     (sql/update! spec :patients
                  {:id (Integer/parseInt id)
                   :name name
                   :address address
                   :gender (seq gender)
-                  :policy_number (seq policy_number)}
+                  :policy_number (seq policy_number)
+                  :birthday (java-time/local-date "dd.MM.yyyy" birthday)}
                  ["id = cast(? as integer)" id]))
   (get-patient id))
 
